@@ -56,11 +56,13 @@ read_password(uint8_t *buf, uint32_t bufsize)
 int
 main(void)
 {
+	uint8_t public_key[32];
+
 	uint8_t hash[32];
 	uint32_t hash_size = 32;
 	void *work_area = NULL;
 	uint32_t nb_blocks = 512 * 1024;
-	uint32_t nb_iterations = 1;
+	uint32_t nb_iterations = 3;
 	uint8_t password[1024];
 	uint32_t password_size = 0;
 	uint8_t salt[16] = {
@@ -83,12 +85,14 @@ main(void)
 		salt, salt_size
 	);
 
-	printf("static const uint8_t public_key[%zu] = {\n", sizeof(hash));
-	for (unsigned int i = 0; i < sizeof(hash); ++i) {
+	crypto_x25519_public_key(public_key, hash);
+
+	printf("static const uint8_t public_key[%zu] = {\n", sizeof(public_key));
+	for (unsigned int i = 0; i < sizeof(public_key); ++i) {
 		if (i % 8 == 0)
 			printf("\t");
-		printf("0x%02x", hash[i]);
-		if (i + 1 == sizeof(hash))
+		printf("0x%02x", public_key[i]);
+		if (i + 1 == sizeof(public_key))
 			printf("\n");
 		else if (i % 8 == 7)
 			printf(",\n");
