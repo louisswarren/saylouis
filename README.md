@@ -26,7 +26,7 @@ Details:
    `ss = BLAKE2b(rs || uhp || lp)` to get the final shared secret.
 5. Output `uhp`.
 6. Input at most `blocksize` bytes.
-7. Call `crypto_lock_aead` on `ss`, `plaintext`, using a count
+7. Call `crypto_lock` on `ss`, `plaintext`, using a count
    (starting at zero) of the blocks as the nonce,
 	 to get the `ciphertext` and `mac`.
 8. Output `mac || ciphertext`. If there's more input to handle, go to 6.

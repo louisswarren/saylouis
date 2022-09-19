@@ -24,9 +24,13 @@ LDFLAGS += -lmonocypher
 .PHONY: default
 default: my_public_key.h
 
+saylouis: saylouis.c my_public_key.h
+
 my_public_key.h: gen_public_key
-	./$< > $@
+	echo "test" | ./$< > $@
 
 gen_public_key: gen_public_key.c
 
-saylouis: saylouis.c my_public_key.h
+.PHONY: clean
+clean:
+	rm -f saylouis my_public_key.h gen_public_key
