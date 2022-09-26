@@ -23,6 +23,7 @@ LDFLAGS += -lmonocypher
 
 .PHONY: default
 default: saylouis decrypt
+	echo -n "Hello" | ./saylouis | ./decrypt
 
 saylouis.o: saylouis.c my_public_key.h
 decrypt.o: decrypt.c

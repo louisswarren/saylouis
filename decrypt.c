@@ -7,7 +7,7 @@
 
 #define die(...) do { fprintf(stderr, __VA_ARGS__); exit(1); } while(0)
 
-#define BLOCKSIZE (64 * 1024)
+#define BLOCKSIZE 20
 
 static
 void
@@ -88,8 +88,8 @@ main(void)
 	uint8_t public_key[32];
 	uint8_t secret_key[32];
 	void *work_area = NULL;
-	uint8_t password[1024];
-	uint32_t password_len = 0;
+	uint8_t password[1024] = "test";
+	uint32_t password_len = 4;
 
 	uint8_t hidden[32];
 	uint8_t eph_public_key[32];
@@ -103,7 +103,8 @@ main(void)
 	if (!(work_area = calloc(nb_blocks, 1024)))
 		die("Failed to allocate work area.\n");
 
-	password_len = read_password(password, sizeof(password));
+//	password_len = read_password(password, sizeof(password));
+//
 
 	crypto_argon2i(
 		secret_key, sizeof(secret_key),
@@ -136,16 +137,18 @@ main(void)
 	crypto_blake2b_final(&blake_ctx,
 		shared_secret);
 
-	while ((len = fread(buf, 1, BLOCKSIZE + 16, stdin) == BLOCKSIZE + 16)) {
+	while ((len = fread(buf, 1, BLOCKSIZE + 16, stdin)) == BLOCKSIZE + 16) {
+		fprintf(stderr, "Loop: decrypt block\n");
 		if (crypto_unlock(
 			buf, shared_secret, ctr, buf + BLOCKSIZE, buf, BLOCKSIZE)
 		) {
 			die("Decryption failed.\n");
 		}
-		if (fwrite(buf, len, 1, stdout) != 1)
+		if (fwrite(buf, BLOCKSIZE, 1, stdout) != 1)
 			die("Write error.\n");
 		nonce_inc(ctr);
 	}
+	fprintf(stderr, "Finished loop, len = %zu\n", len);
 	if (ferror(stdin))
 		die("Error reading input.\n");
 	if (!len) {
