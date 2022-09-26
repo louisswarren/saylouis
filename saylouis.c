@@ -24,7 +24,7 @@ void
 show_fingerprint(uint8_t hidden[32])
 {
 	for (int i = 0; i < 32; ++i)
-		fprintf(stderr, "%x", hidden[i])
+		fprintf(stderr, "%x", hidden[i]);
 	fprintf(stderr, "\n");
 }
 
@@ -91,7 +91,7 @@ main(void)
 		if (fwrite(buf, 16, 1, stdout) != 1)
 			die("Write error.\n");
 	}
-	crypto_wipe(shared_secret, sizezof(shared_secret));
+	crypto_wipe(shared_secret, sizeof(shared_secret));
 
 	return 0;
 }

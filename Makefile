@@ -22,9 +22,10 @@ CFLAGS += -std=c99 $(WARNINGS)
 LDFLAGS += -lmonocypher
 
 .PHONY: default
-default: saylouis
+default: saylouis decrypt
 
 saylouis.o: saylouis.c my_public_key.h
+decrypt.o: decrypt.c
 
 my_public_key.h: gen_public_key
 	echo "test" | ./$< > $@
