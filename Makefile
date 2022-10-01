@@ -21,9 +21,14 @@ WARNINGS  += -Wnested-externs -Wno-missing-field-initializers -fanalyzer
 CFLAGS += -std=c99 $(WARNINGS)
 LDFLAGS += -lmonocypher
 
+CFLAGS += -DPWDTTY=\"pwdtty\"
 .PHONY: default
 default: saylouis decrypt
+	rm -f pwdtty
+	mkfifo pwdtty
+	echo "test" > tty &
 	echo -n "Hello" | ./saylouis | ./decrypt
+	rm pwdtty
 
 saylouis.o: saylouis.c my_public_key.h
 decrypt.o: decrypt.c

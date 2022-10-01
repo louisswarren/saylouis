@@ -5,6 +5,10 @@
 
 #include <monocypher.h>
 
+#ifndef PWDTTY
+#define PWDTTY "/dev/tty"
+#endif
+
 #define die(...) do { fprintf(stderr, __VA_ARGS__); exit(1); } while(0)
 
 #define BLOCKSIZE 20
@@ -37,14 +41,19 @@ read_password(uint8_t *buf, uint32_t bufsize)
 {
 	uint32_t password_len = 0;
 	struct termios term_old;
+	FILE *tty = fopen(PWDTTY, "r");
+
+	if (!tty)
+		die("Failed to get a password from %s\n", PWDTTY);
 
 	if (set_no_echo(&term_old)) {
-		buf = fgets(buf, (int)bufsize, stdin);
+		buf = fgets(buf, (int)bufsize, tty);
 	} else {
 		fprintf(stderr, "Passphrase (Echo off): ");
-		buf = fgets(buf, (int)bufsize, stdin);
+		buf = fgets(buf, (int)bufsize, tty);
 		(void)tcsetattr(0, TCSAFLUSH, &term_old);
 	}
+	fclose(tty);
 
 	if (!buf)
 		die("Failed to read password.\n");
@@ -103,8 +112,7 @@ main(void)
 	if (!(work_area = calloc(nb_blocks, 1024)))
 		die("Failed to allocate work area.\n");
 
-//	password_len = read_password(password, sizeof(password));
-//
+	password_len = read_password(password, sizeof(password));
 
 	crypto_argon2i(
 		secret_key, sizeof(secret_key),
@@ -138,7 +146,6 @@ main(void)
 		shared_secret);
 
 	while ((len = fread(buf, 1, BLOCKSIZE + 16, stdin)) == BLOCKSIZE + 16) {
-		fprintf(stderr, "Loop: decrypt block\n");
 		if (crypto_unlock(
 			buf, shared_secret, ctr, buf + BLOCKSIZE, buf, BLOCKSIZE)
 		) {
@@ -148,7 +155,6 @@ main(void)
 			die("Write error.\n");
 		nonce_inc(ctr);
 	}
-	fprintf(stderr, "Finished loop, len = %zu\n", len);
 	if (ferror(stdin))
 		die("Error reading input.\n");
 	if (!len) {
