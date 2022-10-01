@@ -21,23 +21,30 @@ WARNINGS  += -Wnested-externs -Wno-missing-field-initializers -fanalyzer
 CFLAGS += -std=c99 $(WARNINGS)
 LDFLAGS += -lmonocypher
 
-CFLAGS += -DPWDTTY=\"pwdtty\"
-.PHONY: default
-default: saylouis decrypt
+.PHONY: test
+test: clean
 	rm -f pwdtty
 	mkfifo pwdtty
-	echo "test" > tty &
-	echo -n "Hello" | ./saylouis | ./decrypt
+	echo "test" | $(MAKE) CFLAGS='-DPWDTTY=\"pwdtty\"' saylouis decrypt
+	echo "test" > pwdtty & ./saylouis < saylouis.c | ./decrypt > test.out
 	rm pwdtty
+	diff -q saylouis.c test.out
+	rm test.out
 
-saylouis.o: saylouis.c my_public_key.h
+decrypt: decrypt.o
 decrypt.o: decrypt.c
 
+saylouis: saylouis.o
+saylouis.o: saylouis.c my_public_key.h
+
 my_public_key.h: gen_public_key
-	echo "test" | ./$< > $@
+	./$< > $@
 
 gen_public_key: gen_public_key.c
 
 .PHONY: clean
 clean:
-	rm -f saylouis my_public_key.h gen_public_key
+	rm -f saylouis decrypt gen_public_key
+	rm -f my_public_key.h
+	rm -f *.o
+	rm -f pwdtty test.out
