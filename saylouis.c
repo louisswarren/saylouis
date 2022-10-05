@@ -6,9 +6,10 @@
 
 #include <monocypher.h>
 
+#include "common.h"
+
 #include "my_public_key.h"
 
-#define die(...) do { fprintf(stderr, __VA_ARGS__); exit(1); } while(0)
 
 #define BLOCKSIZE 20
 

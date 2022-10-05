@@ -5,53 +5,11 @@
 
 #include <monocypher.h>
 
-#define die(...) do { fprintf(stderr, __VA_ARGS__); exit(1); } while(0)
+#include "common.h"
 
-static
-int
-set_no_echo(struct termios *prev)
-{
-	struct termios term_noecho;
-	if (tcgetattr(0, prev))
-		return 1;
-	term_noecho = *prev;
-	term_noecho.c_lflag &= (tcflag_t)~ECHO;
-	if (tcsetattr(0, TCSAFLUSH, &term_noecho))
-		return 1;
-	return 0;
-}
-
-static
-uint32_t
-read_password(uint8_t *buf, uint32_t bufsize)
-{
-	uint32_t password_len = 0;
-	struct termios term_old;
-
-	if (set_no_echo(&term_old)) {
-		buf = fgets(buf, (int)bufsize, stdin);
-	} else {
-		fprintf(stderr, "Passphrase (Echo off): ");
-		buf = fgets(buf, (int)bufsize, stdin);
-		(void)tcsetattr(0, TCSAFLUSH, &term_old);
-	}
-
-	if (!buf)
-		die("Failed to read password.\n");
-
-	password_len = (uint32_t)strlen(buf);
-
-	if (password_len + 1 == bufsize)
-		die("Password was truncated.\n");
-
-	if (password_len && buf[password_len - 1] == '\n')
-		buf[password_len-- - 1] = '\0';
-
-	if (!password_len)
-		die("Password was empty.\n");
-
-	return password_len;
-}
+#ifndef PWDTTY
+#define PWDTTY "/dev/tty"
+#endif
 
 int
 main(void)
@@ -75,7 +33,7 @@ main(void)
 	if (!(work_area = calloc(nb_blocks, 1024)))
 		die("Failed to allocate work area.\n");
 
-	password_len = read_password(password, sizeof(password));
+	password_len = read_password(password, sizeof(password), PWDTTY);
 
 	crypto_argon2i(
 		secret_key, sizeof(secret_key),

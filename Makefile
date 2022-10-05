@@ -25,22 +25,27 @@ LDFLAGS += -lmonocypher
 test: clean
 	rm -f pwdtty
 	mkfifo pwdtty
-	echo "test" | $(MAKE) CFLAGS='-DPWDTTY=\"pwdtty\"' saylouis decrypt
-	echo "test" > pwdtty & ./saylouis < saylouis.c | ./decrypt > test.out
+	echo "test" > pwdtty &
+	$(MAKE) CFLAGS='-DPWDTTY=\"pwdtty\"' gen_public_key saylouis decrypt
+	echo "test" > pwdtty &
+	./saylouis < saylouis.c | ./decrypt > test.out
 	rm pwdtty
 	diff -q saylouis.c test.out
 	rm test.out
 
-decrypt: decrypt.o
-decrypt.o: decrypt.c
+decrypt: decrypt.o common.o
+decrypt.o: decrypt.c common.h
 
-saylouis: saylouis.o
-saylouis.o: saylouis.c my_public_key.h
+saylouis: saylouis.o common.o
+saylouis.o: saylouis.c common.h my_public_key.h
 
 my_public_key.h: gen_public_key
 	./$< > $@
 
-gen_public_key: gen_public_key.c
+gen_public_key: gen_public_key.o common.o
+gen_public_key.o: gen_public_key.c common.h
+
+common.o: common.c common.h
 
 .PHONY: clean
 clean:
