@@ -13,22 +13,6 @@
 
 #define BLOCKSIZE 20
 
-static
-void
-nonce_inc(uint8_t ctr[24])
-{
-	for (int i = 0; i < 24 && ++ctr[i] == 0; ++i);
-}
-
-static
-void
-show_fingerprint(uint8_t hidden[32])
-{
-	for (int i = 0; i < 32; ++i)
-		fprintf(stderr, "%x", hidden[i]);
-	fprintf(stderr, "\n");
-}
-
 int
 main(void)
 {
@@ -52,21 +36,8 @@ main(void)
 	crypto_hidden_to_curve(public_key, hidden);
 	show_fingerprint(public_key);
 
-	/* Generate a raw shared secret */
-	crypto_x25519(shared_secret, secret_key, my_public_key);
+	key_exchange(shared_secret, my_public_key, public_key, secret_key);
 	crypto_wipe(secret_key, sizeof(secret_key));
-
-	/* Hash the shared secret with the public keys */
-	crypto_blake2b_general_init(&blake_ctx,
-		sizeof(shared_secret), NULL, 0);
-	crypto_blake2b_update(&blake_ctx,
-		shared_secret, sizeof(shared_secret));
-	crypto_blake2b_update(&blake_ctx,
-		hidden, sizeof(hidden));
-	crypto_blake2b_update(&blake_ctx,
-		my_public_key, sizeof(my_public_key));
-	crypto_blake2b_final(&blake_ctx,
-		shared_secret);
 
 	/* Output the hidden public key */
 	if (fwrite(hidden, sizeof(hidden), 1, stdout) != 1)
