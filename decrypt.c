@@ -11,38 +11,17 @@
 #define PWDTTY "/dev/tty"
 #endif
 
-int
-main(void)
+static
+void
+decrypt_blocks(const uint8_t key[32], FILE *infile, FILE *outfile)
 {
-	uint8_t public_key[32];
-	uint8_t secret_key[32];
-	uint8_t password[1024] = "test";
-	uint32_t password_len = 4;
-
-	uint8_t hidden[32];
-	uint8_t eph_public_key[32];
-	uint8_t shared[32];
-
 	uint8_t buf[BLOCKSIZE + 16];
 	uint8_t ctr[24] = {0};
 	size_t len;
 
-	password_len = read_password(password, sizeof(password), PWDTTY);
-	key_derive(secret_key, password, password_len);
-	crypto_wipe(password, sizeof(password));
-	crypto_x25519_public_key(public_key, secret_key);
-
-	if (fread(hidden, sizeof(hidden), 1, stdin) != 1)
-		die("Read error");
-	crypto_hidden_to_curve(eph_public_key, hidden);
-	show_fingerprint(eph_public_key);
-
-	key_exchange(shared, eph_public_key, public_key, secret_key);
-	crypto_wipe(secret_key, sizeof(secret_key));
-
 	while ((len = fread(buf, 1, BLOCKSIZE + 16, stdin)) == BLOCKSIZE + 16) {
 		if (crypto_unlock(
-			buf, shared, ctr, buf + BLOCKSIZE, buf, BLOCKSIZE)
+			buf, key, ctr, buf + BLOCKSIZE, buf, BLOCKSIZE)
 		) {
 			die("Decryption failed");
 		}
@@ -56,14 +35,14 @@ main(void)
 		die("Input truncated");
 	} else if (len == 16) {
 		if (crypto_unlock(
-			buf + 16, shared, ctr, buf, buf + 16, 0)
+			buf + 16, key, ctr, buf, buf + 16, 0)
 		) {
 			die("Decryption failed");
 		}
 	} else {
 		len -= 16;
 		if (crypto_unlock(
-			buf, shared, ctr, buf + len, buf, len)
+			buf, key, ctr, buf + len, buf, len)
 		) {
 			die("Decryption failed");
 		}
@@ -71,5 +50,34 @@ main(void)
 			die("Write error");
 		nonce_inc(ctr);
 	}
+}
+
+int
+main(void)
+{
+	uint8_t public_key[32];
+	uint8_t secret_key[32];
+	uint8_t password[1024] = "test";
+	uint32_t password_len = 4;
+
+	uint8_t hidden[32];
+	uint8_t eph_public_key[32];
+	uint8_t shared[32];
+
+	password_len = read_password(password, sizeof(password), PWDTTY);
+	key_derive(secret_key, password, password_len);
+	crypto_wipe(password, sizeof(password));
+	password_len = 0;
+	crypto_x25519_public_key(public_key, secret_key);
+
+	if (fread(hidden, sizeof(hidden), 1, stdin) != 1)
+		die("Read error");
+	crypto_hidden_to_curve(eph_public_key, hidden);
+	show_fingerprint(eph_public_key);
+
+	key_exchange(shared, eph_public_key, public_key, secret_key);
+	crypto_wipe(secret_key, sizeof(secret_key));
+
+	decrypt_blocks(shared, stdin, stdout);
 	return 0;
 }

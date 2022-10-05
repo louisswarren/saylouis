@@ -22,6 +22,7 @@ main(void)
 	password_len = read_password(password, sizeof(password), PWDTTY);
 	key_derive(secret_key, password, password_len);
 	crypto_wipe(password, sizeof(password));
+	password_len = 0;
 
 	crypto_x25519_public_key(public_key, secret_key);
 	crypto_wipe(secret_key, sizeof(secret_key));
