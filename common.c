@@ -88,7 +88,7 @@ read_password(uint8_t *buf, uint32_t bufsize, const char *ttypath)
 	FILE *tty = fopen(ttypath, "r");
 
 	if (!tty)
-		die("Failed to get a password from %s\n", ttypath);
+		die("Failed to get a password from %s", ttypath);
 
 	if (set_no_echo(&term_old)) {
 		buf = fgets(buf, (int)bufsize, tty);
@@ -100,18 +100,18 @@ read_password(uint8_t *buf, uint32_t bufsize, const char *ttypath)
 	fclose(tty);
 
 	if (!buf)
-		die("Failed to read password.\n");
+		die("Failed to read password");
 
 	password_len = (uint32_t)strlen(buf);
 
 	if (password_len + 1 == bufsize)
-		die("Password was truncated.\n");
+		die("Password was truncated");
 
 	if (password_len && buf[password_len - 1] == '\n')
 		buf[password_len-- - 1] = '\0';
 
 	if (!password_len)
-		die("Password was empty.\n");
+		die("Password was empty");
 
 	return password_len;
 }

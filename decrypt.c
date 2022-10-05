@@ -11,8 +11,6 @@
 #define PWDTTY "/dev/tty"
 #endif
 
-#define BLOCKSIZE 20
-
 int
 main(void)
 {
@@ -23,8 +21,7 @@ main(void)
 
 	uint8_t hidden[32];
 	uint8_t eph_public_key[32];
-	uint8_t shared_secret[32];
-	crypto_blake2b_ctx blake_ctx;
+	uint8_t shared[32];
 
 	uint8_t buf[BLOCKSIZE + 16];
 	uint8_t ctr[24] = {0};
@@ -36,42 +33,42 @@ main(void)
 	crypto_x25519_public_key(public_key, secret_key);
 
 	if (fread(hidden, sizeof(hidden), 1, stdin) != 1)
-		die("Read error.\n");
+		die("Read error");
 	crypto_hidden_to_curve(eph_public_key, hidden);
 	show_fingerprint(eph_public_key);
 
-	key_exchange(shared_secret, eph_public_key, public_key, secret_key);
+	key_exchange(shared, eph_public_key, public_key, secret_key);
 	crypto_wipe(secret_key, sizeof(secret_key));
 
 	while ((len = fread(buf, 1, BLOCKSIZE + 16, stdin)) == BLOCKSIZE + 16) {
 		if (crypto_unlock(
-			buf, shared_secret, ctr, buf + BLOCKSIZE, buf, BLOCKSIZE)
+			buf, shared, ctr, buf + BLOCKSIZE, buf, BLOCKSIZE)
 		) {
-			die("Decryption failed.\n");
+			die("Decryption failed");
 		}
 		if (fwrite(buf, BLOCKSIZE, 1, stdout) != 1)
-			die("Write error.\n");
+			die("Write error");
 		nonce_inc(ctr);
 	}
 	if (ferror(stdin))
-		die("Error reading input.\n");
+		die("Error reading input");
 	if (!len) {
-		die("Input truncated.\n");
+		die("Input truncated");
 	} else if (len == 16) {
 		if (crypto_unlock(
-			buf + 16, shared_secret, ctr, buf, buf + 16, 0)
+			buf + 16, shared, ctr, buf, buf + 16, 0)
 		) {
-			die("Decryption failed.\n");
+			die("Decryption failed");
 		}
 	} else {
 		len -= 16;
 		if (crypto_unlock(
-			buf, shared_secret, ctr, buf + len, buf, len)
+			buf, shared, ctr, buf + len, buf, len)
 		) {
-			die("Decryption failed.\n");
+			die("Decryption failed");
 		}
 		if (fwrite(buf, len, 1, stdout) != 1)
-			die("Write error.\n");
+			die("Write error");
 		nonce_inc(ctr);
 	}
 	return 0;

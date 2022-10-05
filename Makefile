@@ -17,9 +17,13 @@ WARNINGS  += -Wstrict-prototypes #-Wold-style-definition
 WARNINGS  += -Wmissing-prototypes
 WARNINGS  += -Wmissing-declarations -Wnormalized=nfkc -Wredundant-decls
 WARNINGS  += -Wnested-externs -Wno-missing-field-initializers -fanalyzer
+WARNINGS  += -Wunused
 
 CFLAGS += -std=c99 $(WARNINGS)
 LDFLAGS += -lmonocypher
+
+.PHONY: default
+default: test
 
 .PHONY: test
 test: clean
