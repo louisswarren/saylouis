@@ -30,7 +30,7 @@ test: clean
 	rm -f pwdtty
 	mkfifo pwdtty
 	echo "test" > pwdtty &
-	$(MAKE) CFLAGS='-DPWDTTY=\"pwdtty\"' gen_public_key saylouis decrypt
+	$(MAKE) CFLAGS='-DPWDTTY=\"pwdtty\" $(CFLAGS)' gen_public_key saylouis decrypt
 	echo "test" > pwdtty &
 	./saylouis < saylouis.c | ./decrypt > test.out
 	rm pwdtty
