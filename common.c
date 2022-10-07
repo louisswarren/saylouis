@@ -68,14 +68,14 @@ show_fingerprint(const uint8_t public[32])
 
 static
 int
-set_no_echo(struct termios *prev)
+set_no_echo(struct termios *prev, int fd)
 {
 	struct termios term_noecho;
-	if (tcgetattr(0, prev))
+	if (tcgetattr(fd, prev))
 		return 1;
 	term_noecho = *prev;
 	term_noecho.c_lflag &= (tcflag_t)~ECHO;
-	if (tcsetattr(0, TCSAFLUSH, &term_noecho))
+	if (tcsetattr(fd, TCSAFLUSH, &term_noecho))
 		return 1;
 	return 0;
 }
@@ -85,16 +85,18 @@ read_password(uint8_t *buf, uint32_t bufsize, const char *ttypath)
 {
 	uint32_t password_len = 0;
 	struct termios term_old;
-	FILE *tty = fopen(ttypath, "r");
+	FILE *tty = fopen(ttypath, "r+");
 
 	if (!tty)
 		die("Failed to get a password from %s", ttypath);
 
-	if (set_no_echo(&term_old)) {
+	if (set_no_echo(&term_old, tty->_fileno)) {
 		buf = fgets(buf, (int)bufsize, tty);
 	} else {
-		fprintf(stderr, "Passphrase (Echo off): ");
+		fprintf(tty, "Passphrase (Echo off): ");
+		fflush(tty);
 		buf = fgets(buf, (int)bufsize, tty);
+		fprintf(tty, "\n");
 		(void)tcsetattr(0, TCSAFLUSH, &term_old);
 	}
 	fclose(tty);
