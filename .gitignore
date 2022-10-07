@@ -1,6 +1,7 @@
+*.o
+
 decrypt
-decrypt.o
 gen_public_key
-my_public_key.h
 saylouis
-saylouis.o
+
+my_public_key.h
