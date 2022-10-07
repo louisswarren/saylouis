@@ -19,17 +19,17 @@ decrypt_blocks(const uint8_t key[32], FILE *infile, FILE *outfile)
 	uint8_t ctr[24] = {0};
 	size_t len;
 
-	while ((len = fread(buf, 1, BLOCKSIZE + 16, stdin)) == BLOCKSIZE + 16) {
+	while ((len = fread(buf, 1, BLOCKSIZE + 16, infile)) == BLOCKSIZE + 16) {
 		if (crypto_unlock(
 			buf, key, ctr, buf + BLOCKSIZE, buf, BLOCKSIZE)
 		) {
 			die("Decryption failed");
 		}
-		if (fwrite(buf, BLOCKSIZE, 1, stdout) != 1)
+		if (fwrite(buf, BLOCKSIZE, 1, outfile) != 1)
 			die("Write error");
 		nonce_inc(ctr);
 	}
-	if (ferror(stdin))
+	if (ferror(infile))
 		die("Error reading input");
 	if (!len) {
 		die("Input truncated");
@@ -46,7 +46,7 @@ decrypt_blocks(const uint8_t key[32], FILE *infile, FILE *outfile)
 		) {
 			die("Decryption failed");
 		}
-		if (fwrite(buf, len, 1, stdout) != 1)
+		if (fwrite(buf, len, 1, outfile) != 1)
 			die("Write error");
 		nonce_inc(ctr);
 	}
