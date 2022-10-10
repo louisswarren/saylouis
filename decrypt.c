@@ -64,7 +64,11 @@ main(void)
 	uint8_t eph_public_key[32];
 	uint8_t shared[32];
 
-	password_len = read_password(password, sizeof(password), PWDTTY);
+	FILE *tty = fopen(PWDTTY, "r+");
+	if (!tty)
+		die("Failed to get a password from %s", PWDTTY);
+
+	password_len = read_password(password, sizeof(password), tty);
 	key_derive(secret_key, password, password_len);
 	crypto_wipe(password, sizeof(password));
 	password_len = 0;
@@ -75,7 +79,8 @@ main(void)
 	crypto_hidden_to_curve(eph_public_key, hidden);
 	show_fingerprint(eph_public_key);
 
-	key_exchange(shared, eph_public_key, public_key, secret_key);
+	crypto_x25519(shared, secret_key, eph_public_key);
+	shared_secret_key_commit(shared, public_key, eph_public_key);
 	crypto_wipe(secret_key, sizeof(secret_key));
 
 	decrypt_blocks(shared, stdin, stdout);

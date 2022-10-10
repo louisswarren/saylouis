@@ -57,7 +57,8 @@ main(void)
 	crypto_hidden_to_curve(public, hidden);
 	show_fingerprint(public);
 
-	key_exchange(shared, my_public_key, public, secret);
+	crypto_x25519(shared, secret, my_public_key);
+	shared_secret_key_commit(shared, my_public_key, public);
 	crypto_wipe(secret, sizeof(secret));
 
 	/* Output the hidden public key */

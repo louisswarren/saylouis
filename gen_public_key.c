@@ -19,7 +19,11 @@ main(void)
 	uint8_t password[1024];
 	uint32_t password_len = 0;
 
-	password_len = read_password(password, sizeof(password), PWDTTY);
+	FILE *tty = fopen(PWDTTY, "r+");
+	if (!tty)
+		die("Failed to get a password from %s", PWDTTY);
+
+	password_len = read_password(password, sizeof(password), tty);
 	key_derive(secret_key, password, password_len);
 	crypto_wipe(password, sizeof(password));
 	password_len = 0;
