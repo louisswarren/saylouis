@@ -59,7 +59,10 @@ main(void)
 	crypto_hidden_key_pair(hidden, secret, seed);
 	crypto_wipe(seed, sizeof(seed));
 	crypto_hidden_to_curve(public, hidden);
+
+	fprintf(stderr, "Encrypting with public key: ");
 	show_fingerprint(public);
+	fflush(stderr);
 
 	crypto_x25519(shared, secret, my_public_key);
 	shared_secret_key_commit(shared, my_public_key, public);
