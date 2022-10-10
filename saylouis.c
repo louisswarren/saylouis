@@ -14,9 +14,12 @@ static
 void
 encrypt_blocks(const uint8_t key[32], FILE *infile, FILE *outfile)
 {
-	uint8_t buf[BLOCKSIZE + 16];
+	uint8_t *buf;
 	uint8_t ctr[24] = {0};
 	size_t len;
+
+	if (!(buf = malloc(BLOCKSIZE + 16)))
+		die("Out of memory");
 
 	while (len = fread(buf, 1, BLOCKSIZE, infile)) {
 		if (ferror(infile))
@@ -38,6 +41,8 @@ encrypt_blocks(const uint8_t key[32], FILE *infile, FILE *outfile)
 		if (fwrite(buf, 16, 1, outfile) != 1)
 			die("Write error");
 	}
+	crypto_wipe(buf, BLOCKSIZE + 16);
+	free(buf);
 }
 
 int

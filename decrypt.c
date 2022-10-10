@@ -15,9 +15,12 @@ static
 void
 decrypt_blocks(const uint8_t key[32], FILE *infile, FILE *outfile)
 {
-	uint8_t buf[BLOCKSIZE + 16];
+	uint8_t *buf;
 	uint8_t ctr[24] = {0};
 	size_t len;
+
+	if (!(buf = malloc(BLOCKSIZE + 16)))
+		die("Out of memory");
 
 	while ((len = fread(buf, 1, BLOCKSIZE + 16, infile)) == BLOCKSIZE + 16) {
 		if (crypto_unlock(
@@ -50,6 +53,8 @@ decrypt_blocks(const uint8_t key[32], FILE *infile, FILE *outfile)
 			die("Write error");
 		nonce_inc(ctr);
 	}
+	crypto_wipe(buf, BLOCKSIZE + 16);
+	free(buf);
 }
 
 int

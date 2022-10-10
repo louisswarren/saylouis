@@ -4,7 +4,7 @@
 		exit(1); \
 	} while(0)
 
-#define BLOCKSIZE (64 * 1024)
+#define BLOCKSIZE (64 * 1024 * 1024)
 
 void key_derive(uint8_t k[32], const uint8_t *buf, uint32_t bufsize);
 void shared_secret_key_commit(
