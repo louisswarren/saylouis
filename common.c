@@ -7,49 +7,6 @@
 
 #include "common.h"
 
-void key_derive(uint8_t key[32], const uint8_t *buf, uint32_t buflen)
-{
-	const uint32_t kdf_blocks = 512 * 1024;
-	const uint32_t kdf_iterations = 3;
-	const uint8_t kdf_salt[16] = {
-		'l', 'o', 'u', 'i',
-		's', '@', 'l', 's',
-		'w', '.', 'n', 'z',
-		31,  41,  59,  26,
-	};
-
-	void *work_area = calloc(kdf_blocks, 1024);
-	if (!work_area)
-		die("Failed to allocate work area");
-
-	crypto_argon2i(
-		key, 32,
-		work_area,
-		kdf_blocks, kdf_iterations,
-		buf, buflen,
-		kdf_salt, sizeof(kdf_salt)
-	);
-}
-
-void shared_secret_key_commit(
-	uint8_t shared[32],
-	const uint8_t louis_public[32],
-	const uint8_t ephemeral_public[32]
-) {
-	crypto_blake2b_ctx bc;
-	crypto_blake2b_general_init(&bc, 32, NULL, 0);
-	crypto_blake2b_update(&bc, shared, 32);
-	crypto_blake2b_update(&bc, louis_public, 32);
-	crypto_blake2b_update(&bc, ephemeral_public, 32);
-	crypto_blake2b_final(&bc, shared);
-}
-
-void
-nonce_inc(uint8_t nonce[24])
-{
-	for (int i = 0; i < 24 && ++nonce[i] == 0; ++i);
-}
-
 void
 show_fingerprint(const uint8_t public[32])
 {

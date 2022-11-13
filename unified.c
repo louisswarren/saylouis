@@ -173,7 +173,7 @@ void
 key_from_secret(
 	uint8_t key[32],
 	const uint8_t e_public_hidden[32],
-	const uint8_t d_secret[32]
+	uint8_t d_secret[32]
 )
 {
 	uint8_t d_public[32];
@@ -187,6 +187,7 @@ key_from_secret(
 
 	/* Create the shared key */
 	crypto_x25519(key, d_secret, e_public);
+	crypto_wipe(d_secret, 32);
 
 	/* Commit the shared key using the public keys */
 	crypto_blake2b_general_init(&bc, 32, NULL, 0);
@@ -200,7 +201,7 @@ key_from_secret(
 }
 
 void
-unhide_key(uint8_t public[32], uint8_t public_hidden[32])
+unhide_key(uint8_t public[32], const uint8_t public_hidden[32])
 {
 	crypto_hidden_to_curve(public, public_hidden);
 }

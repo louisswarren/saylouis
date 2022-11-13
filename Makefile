@@ -37,19 +37,19 @@ test: clean
 	diff -q saylouis.c test.out
 	rm test.out
 
-decrypt: decrypt.o common.o
-decrypt.o: decrypt.c common.h
+decrypt: decrypt.o unified.o
+decrypt.o: decrypt.c unified.h
 
-saylouis: saylouis.o common.o
-saylouis.o: saylouis.c common.h my_public_key.h
+saylouis: saylouis.o unified.o
+saylouis.o: saylouis.c unified.h my_public_key.h
+
+unified.o: unified.c unified.h
 
 my_public_key.h: gen_public_key
 	./$< > $@
 
-gen_public_key: gen_public_key.o common.o
-gen_public_key.o: gen_public_key.c common.h
-
-common.o: common.c common.h
+gen_public_key: gen_public_key.o unified.o
+gen_public_key.o: gen_public_key.c unified.h
 
 .PHONY: clean
 clean:
