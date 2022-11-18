@@ -32,13 +32,10 @@ test: clean
 	echo "test" > pwdtty &
 	$(MAKE) CFLAGS='-DPWDTTY=\"pwdtty\" $(CFLAGS)' gen_public_key saylouis decrypt
 	echo "test" > pwdtty &
-	./saylouis < saylouis.c | ./decrypt > test.out
+	./saylouis < saylouis.c | ./saylouis -d > test.out
 	rm pwdtty
 	diff -q saylouis.c test.out
 	rm test.out
-
-decrypt: decrypt.o unified.o
-decrypt.o: decrypt.c unified.h
 
 saylouis: saylouis.o unified.o
 saylouis.o: saylouis.c unified.h my_public_key.h
