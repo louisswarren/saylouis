@@ -30,7 +30,7 @@ test: clean
 	rm -f pwdtty
 	mkfifo pwdtty
 	echo "test" > pwdtty &
-	$(MAKE) CFLAGS='-DPWDTTY=\"pwdtty\" $(CFLAGS)' gen_public_key saylouis decrypt
+	$(MAKE) CFLAGS='-DPWDTTY=\"pwdtty\" $(CFLAGS)' gen_public_key saylouis
 	echo "test" > pwdtty &
 	./saylouis < saylouis.c | ./saylouis -d > test.out
 	rm pwdtty
@@ -38,7 +38,7 @@ test: clean
 	rm test.out
 
 saylouis: saylouis.o unified.o
-saylouis.o: saylouis.c unified.h my_public_key.h
+saylouis.o: saylouis.c unified.h utils.h my_public_key.h
 
 unified.o: unified.c unified.h
 
@@ -46,11 +46,11 @@ my_public_key.h: gen_public_key
 	./$< > $@
 
 gen_public_key: gen_public_key.o unified.o
-gen_public_key.o: gen_public_key.c unified.h
+gen_public_key.o: gen_public_key.c unified.h utils.h
 
 .PHONY: clean
 clean:
-	rm -f saylouis decrypt gen_public_key
+	rm -f saylouis gen_public_key
 	rm -f my_public_key.h
 	rm -f *.o
 	rm -f pwdtty test.out
