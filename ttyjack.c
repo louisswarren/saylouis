@@ -6,7 +6,7 @@ FILE *
 fopen(const char *restrict pathname, const char *restrict mode)
 {
 	const char tty_path[] = "/dev/tty";
-	const char pwd_path[] = "./pwdtty";
+	const char pwd_path[] = "./test/pwdtty";
 
 	FILE *(*stdio_fopen)(const char *restrict, const char *restrict);
 	stdio_fopen = dlsym(RTLD_NEXT, "fopen");

@@ -23,37 +23,46 @@ CFLAGS += -std=c99 $(WARNINGS)
 LDFLAGS += -lmonocypher
 
 .PHONY: default
-default: test
+default: run-test
 
-.PHONY: test
-test: ttyjack.so
-	rm -f my_public_key.h
-	rm -f pwdtty
-	mkfifo pwdtty
-	echo "test" > pwdtty &
-	$(MAKE) PRELOAD='LD_PRELOAD=./ttyjack.so' my_public_key.h
-	$(MAKE) saylouis
-	mv saylouis saylouis-test
-	rm my_public_key.h saylouis.o
-	echo "test" > pwdtty &
-	./saylouis-test < saylouis.c | LD_PRELOAD=./ttyjack.so ./saylouis-test -d > test.out
-	rm pwdtty
-	diff -q saylouis.c test.out
-	rm test.out saylouis-test
+.PHONY: run-test
+run-test: test/saylouis-test test/ttyjack.so
+	rm -f test/pwdtty
+	mkfifo test/pwdtty
+	echo "test" > test/pwdtty &
+	./$< < saylouis.c | LD_PRELOAD=./test/ttyjack.so ./$< -d > test/test.out
+	rm test/pwdtty
+	diff -q saylouis.c test/test.out
 
+# TESTS
+test/saylouis-test: test/saylouis-test.o unified.o
+test/saylouis-test.o: saylouis.c unified.h utils.h test/my_public_key.h
+	cp saylouis.c unified.h utils.h test/
+	$(CC) $(CFLAGS) -c test/saylouis.c -o $@
+
+test/my_public_key.h: gen_public_key test/ttyjack.so
+	rm -f test/pwdtty
+	mkfifo test/pwdtty
+	echo "test" > test/pwdtty &
+	LD_PRELOAD=./test/ttyjack.so ./$< > $@
+	rm test/pwdtty
+
+test/ttyjack.so: ttyjack.c
+	mkdir -p "test"
+	$(CC) $(CFLAGS) -shared -fPIC -ldl -Wno-pedantic -o $@ $<
+
+# PROD
 saylouis: saylouis.o unified.o
 saylouis.o: saylouis.c unified.h utils.h my_public_key.h
 
-unified.o: unified.c unified.h
-
 my_public_key.h: gen_public_key
-	$(PRELOAD) ./$< > $@
+	./$< > $@
+
+# DEPS
+unified.o: unified.c unified.h
 
 gen_public_key: gen_public_key.o unified.o
 gen_public_key.o: gen_public_key.c unified.h utils.h
-
-ttyjack.so: ttyjack.c
-	$(CC) $(CFLAGS) -shared -fPIC -ldl -Wno-pedantic -o $@ $<
 
 .PHONY: clean
 clean:
@@ -61,3 +70,4 @@ clean:
 	rm -f my_public_key.h
 	rm -f *.o *.so
 	rm -f pwdtty test.out
+	rm -rf test

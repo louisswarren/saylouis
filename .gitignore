@@ -3,6 +3,7 @@
 decrypt
 gen_public_key
 saylouis
-ttyjack.so
 
 my_public_key.h
+
+test/
