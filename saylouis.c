@@ -53,6 +53,13 @@ decrypt(void)
 		die("Failed to get a password from %s", PWDTTY);
 
 	password_len = read_password(password, sizeof(password), tty);
+	fclose(tty);
+
+	if (!password_len)
+		die("Password was empty");
+	if (password_len + 1 == sizeof(password))
+		die("Password was truncated");
+
 	derive_key_pair(public_key, secret_key, password, password_len);
 	crypto_wipe(password, sizeof(password));
 	password_len = 0;
@@ -75,6 +82,12 @@ gen_public_key(void)
 		die("Failed to get a password from %s", PWDTTY);
 
 	password_len = read_password(password, sizeof(password), tty);
+	fclose(tty);
+
+	if (!password_len)
+		die("Password was empty");
+	if (password_len + 1 == sizeof(password))
+		die("Password was truncated");
 
 	derive_key_pair(public_key, NULL, password, password_len);
 	crypto_wipe(password, sizeof(password));
@@ -140,6 +153,4 @@ main(int argc, char *argv[])
 	if (argc == 2 && !strcmp(argv[1], "-d"))
 		return decrypt();
 	die("Usage: %s < plaintext > ciphertext", argv[0]);
-	if (argc == 2 && !strcmp(argv[1], "--get-public-key-from-pwd"))
-		return gen_public_key();
 }

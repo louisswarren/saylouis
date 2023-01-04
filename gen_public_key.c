@@ -24,6 +24,12 @@ main(void)
 		die("Failed to get a password from %s", PWDTTY);
 
 	password_len = read_password(password, sizeof(password), tty);
+	fclose(tty);
+
+	if (!password_len)
+		die("Password was empty");
+	if (password_len + 1 == sizeof(password))
+		die("Password was truncated");
 
 	derive_key_pair(public_key, NULL, password, password_len);
 	crypto_wipe(password, sizeof(password));

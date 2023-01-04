@@ -13,23 +13,22 @@ tty_set_no_echo(struct termios *tmp, int fd)
 		return -1;
 	term_noecho = *tmp;
 	term_noecho.c_lflag &= (tcflag_t)~ECHO;
-	if (tcsetattr(fd, TCSAFLUSH, &term_noecho))
-		return -1;
-	return 0;
+	return tcsetattr(fd, TCSAFLUSH, &term_noecho);
 }
 
 static
-void
-tty_unset_no_echo(struct termios *tmp, int fd)
+int
+tty_unset_no_echo(const struct termios *tmp, int fd)
 {
-	(void)tcsetattr(fd, TCSAFLUSH, tmp);
+	return tcsetattr(fd, TCSAFLUSH, tmp);
 }
 
+/* Read a string with length at most bufsize-1 from tty into buf */
 static
 uint32_t
 read_password(uint8_t *buf, uint32_t bufsize, FILE *tty)
 {
-	uint32_t password_len = 0;
+	uint32_t password_len;
 	struct termios tmp;
 
 	if (tty_set_no_echo(&tmp, tty->_fileno)) {
@@ -39,23 +38,16 @@ read_password(uint8_t *buf, uint32_t bufsize, FILE *tty)
 		fflush(tty);
 		buf = fgets(buf, (int)bufsize, tty);
 		fprintf(tty, "\n");
-		tty_unset_no_echo(&tmp, tty->_fileno);
+		(void)tty_unset_no_echo(&tmp, tty->_fileno);
 	}
-	fclose(tty);
 
 	if (!buf)
-		die("Failed to read password");
+		return 0;
 
 	password_len = (uint32_t)strlen(buf);
 
-	if (password_len + 1 == bufsize)
-		die("Password was truncated");
-
 	if (password_len && buf[password_len - 1] == '\n')
-		buf[password_len-- - 1] = '\0';
-
-	if (!password_len)
-		die("Password was empty");
+		buf[--password_len] = '\0';
 
 	return password_len;
 }
