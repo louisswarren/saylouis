@@ -22,14 +22,14 @@ WARNINGS  += -Wunused
 CFLAGS += -std=c99 $(WARNINGS)
 LDFLAGS += -lmonocypher
 
-.PHONY: default
-default: run-test
+MAKE_PWDTTY = rm -f test/pwdtty; mkfifo test/pwdtty; echo "test" > test/pwdtty &
 
-.PHONY: run-test
-run-test: test/saylouis-test test/ttyjack.so
-	rm -f test/pwdtty
-	mkfifo test/pwdtty
-	echo "test" > test/pwdtty &
+.PHONY: default
+default: test saylouis
+
+.PHONY: test
+test: test/saylouis-test test/ttyjack.so
+	$(MAKE_PWDTTY)
 	./$< < saylouis.c | LD_PRELOAD=./test/ttyjack.so ./$< -d > test/test.out
 	rm test/pwdtty
 	diff -q saylouis.c test/test.out
@@ -41,9 +41,7 @@ test/saylouis-test.o: saylouis.c unified.h utils.h test/my_public_key.h
 	$(CC) $(CFLAGS) -c test/saylouis.c -o $@
 
 test/my_public_key.h: gen_public_key test/ttyjack.so
-	rm -f test/pwdtty
-	mkfifo test/pwdtty
-	echo "test" > test/pwdtty &
+	$(MAKE_PWDTTY)
 	LD_PRELOAD=./test/ttyjack.so ./$< > $@
 	rm test/pwdtty
 
@@ -59,10 +57,10 @@ my_public_key.h: gen_public_key
 	./$< > $@
 
 # DEPS
-unified.o: unified.c unified.h
-
 gen_public_key: gen_public_key.o unified.o
 gen_public_key.o: gen_public_key.c unified.h utils.h
+
+unified.o: unified.c unified.h
 
 .PHONY: clean
 clean:
