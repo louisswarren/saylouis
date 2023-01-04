@@ -26,16 +26,20 @@ LDFLAGS += -lmonocypher
 default: test
 
 .PHONY: test
-test: clean
+test: ttyjack.so
+	rm -f my_public_key.h
 	rm -f pwdtty
 	mkfifo pwdtty
 	echo "test" > pwdtty &
-	$(MAKE) PRELOAD='LD_PRELOAD=./ttyjack.so' gen_public_key saylouis
+	$(MAKE) PRELOAD='LD_PRELOAD=./ttyjack.so' my_public_key.h
+	$(MAKE) saylouis
+	mv saylouis saylouis-test
+	rm my_public_key.h saylouis.o
 	echo "test" > pwdtty &
-	./saylouis < saylouis.c | LD_PRELOAD=./ttyjack.so ./saylouis -d > test.out
+	./saylouis-test < saylouis.c | LD_PRELOAD=./ttyjack.so ./saylouis-test -d > test.out
 	rm pwdtty
 	diff -q saylouis.c test.out
-	rm test.out
+	rm test.out saylouis-test
 
 saylouis: saylouis.o unified.o
 saylouis.o: saylouis.c unified.h utils.h my_public_key.h
@@ -55,5 +59,5 @@ ttyjack.so: ttyjack.c
 clean:
 	rm -f saylouis gen_public_key
 	rm -f my_public_key.h
-	rm -f *.o
+	rm -f *.o *.so
 	rm -f pwdtty test.out
