@@ -30,9 +30,9 @@ test: clean
 	rm -f pwdtty
 	mkfifo pwdtty
 	echo "test" > pwdtty &
-	$(MAKE) CFLAGS='-DPWDTTY=\"pwdtty\" $(CFLAGS)' gen_public_key saylouis
+	$(MAKE) PRELOAD='LD_PRELOAD=./ttyjack.so' gen_public_key saylouis
 	echo "test" > pwdtty &
-	./saylouis < saylouis.c | ./saylouis -d > test.out
+	./saylouis < saylouis.c | LD_PRELOAD=./ttyjack.so ./saylouis -d > test.out
 	rm pwdtty
 	diff -q saylouis.c test.out
 	rm test.out
@@ -43,10 +43,13 @@ saylouis.o: saylouis.c unified.h utils.h my_public_key.h
 unified.o: unified.c unified.h
 
 my_public_key.h: gen_public_key
-	./$< > $@
+	$(PRELOAD) ./$< > $@
 
 gen_public_key: gen_public_key.o unified.o
 gen_public_key.o: gen_public_key.c unified.h utils.h
+
+ttyjack.so: ttyjack.c
+	$(CC) $(CFLAGS) -shared -fPIC -ldl -Wno-pedantic -o $@ $<
 
 .PHONY: clean
 clean:

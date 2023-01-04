@@ -14,10 +14,6 @@
 
 #include "my_public_key.h"
 
-#ifndef PWDTTY
-#define PWDTTY "/dev/tty"
-#endif
-
 static
 void
 show_fingerprint(const uint8_t public[32])
@@ -48,9 +44,9 @@ decrypt(void)
 	show_fingerprint(eph_public_key);
 	fflush(stderr);
 
-	FILE *tty = fopen(PWDTTY, "r+");
+	FILE *tty = fopen("/dev/tty", "r+");
 	if (!tty)
-		die("Failed to get a password from %s", PWDTTY);
+		die("Failed to get a password");
 
 	password_len = read_password(password, sizeof(password), tty);
 	fclose(tty);

@@ -19,9 +19,9 @@ main(void)
 	uint8_t password[1024];
 	uint32_t password_len = 0;
 
-	FILE *tty = fopen(PWDTTY, "r+");
+	FILE *tty = fopen("/dev/tty", "r+");
 	if (!tty)
-		die("Failed to get a password from %s", PWDTTY);
+		die("Failed to get a password");
 
 	password_len = read_password(password, sizeof(password), tty);
 	fclose(tty);
