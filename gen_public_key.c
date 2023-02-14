@@ -13,14 +13,22 @@
 #include "utils.h"
 
 int
-main(void)
+main(int argc, char *argv[])
 {
 	uint8_t public_key[32];
 	uint8_t password[1024];
 	uint32_t password_len = 0;
 
-	FILE *tty = fopen("/dev/tty", "r+");
-	if (!tty)
+	FILE *tty;
+
+	if (argc == 2 && argv[1][0] == '-' && argv[1][1] == 'b') {
+		password_len = 32;
+		memset(password, 'x', password_len);
+		derive_key_pair(public_key, NULL, password, password_len);
+		return 0;
+	}
+
+	if (!(tty = fopen("/dev/tty", "r+")))
 		die("Failed to get a password");
 
 	password_len = read_password(password, sizeof(password), tty);

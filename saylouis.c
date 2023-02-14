@@ -78,7 +78,6 @@ saylouis(void)
 	if (getrandom(seed, sizeof(seed), 0) != sizeof(seed))
 		die("Failed to seed a new key");
 
-
 	key_from_random(shared, hidden, seed, my_public_key);
 
 	fprintf(stderr, "Encrypting with public key: ");

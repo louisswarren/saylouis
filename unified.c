@@ -116,7 +116,7 @@ derive_key_pair(
 		31,  41,  59,  26,
 	};
 
-	/* If d_secret is NULL, create a temporary buffer for the secret key */
+	/* If d_secret is NULL, use a temporary buffer for the secret key */
 	uint8_t d_secret_internal[32];
 	uint8_t *secret_buf = d_secret ? d_secret : d_secret_internal;
 
@@ -133,8 +133,6 @@ derive_key_pair(
 	);
 
 	crypto_x25519_public_key(d_public, secret_buf);
-
-	/* Wipe the d_secret_internal regardless if it was used (paranoid) */
 	crypto_wipe(d_secret_internal, sizeof(d_secret_internal));
 }
 

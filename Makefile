@@ -25,7 +25,7 @@ LDFLAGS += -lmonocypher
 MAKE_PWDTTY = rm -f test/pwdtty; mkfifo test/pwdtty; echo "test" > test/pwdtty &
 
 .PHONY: default
-default: test saylouis
+default: bench
 
 .PHONY: test
 test: test/saylouis-test test/ttyjack.so
@@ -48,6 +48,10 @@ test/my_public_key.h: gen_public_key test/ttyjack.so
 test/ttyjack.so: ttyjack.c
 	mkdir -p "test"
 	$(CC) $(CFLAGS) -shared -fPIC -ldl -Wno-pedantic -o $@ $<
+
+.PHONY: bench
+bench:	gen_public_key
+	sh -c "time ./$< -b"
 
 # PROD
 saylouis: saylouis.o unified.o
