@@ -48,7 +48,7 @@ decrypt(void)
 	if (!tty)
 		die("Failed to get a password");
 
-	password_len = read_password(password, sizeof(password), tty);
+	password_len = read_password((char *)password, sizeof(password), tty);
 	fclose(tty);
 
 	if (!password_len)

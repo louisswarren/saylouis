@@ -30,7 +30,7 @@ encrypt_blocks(const uint8_t key[32], FILE *infile, FILE *outfile)
 	if (!(buf = malloc(BLOCKSIZE + 16)))
 		die("Out of memory");
 
-	while (len = fread(buf, 1, BLOCKSIZE, infile)) {
+	while ((len = fread(buf, 1, BLOCKSIZE, infile))) {
 		if (ferror(infile))
 			die("Error reading input");
 		crypto_lock(buf + len, buf, key, ctr, buf, len);

@@ -1,23 +1,4 @@
-WARNINGS  += -pedantic -pedantic-errors -Wno-overlength-strings
-WARNINGS  += -fmax-errors=2
-WARNINGS  += -Wall -Wextra -Wdouble-promotion -Wformat=2
-WARNINGS  += -Wformat-signedness -Wvla -Wformat-truncation=2 -Wformat-overflow=2
-WARNINGS  += -Wnull-dereference -Winit-self -Wuninitialized
-WARNINGS  += -Wimplicit-fallthrough=4 -Wstack-protector -Wmissing-include-dirs
-WARNINGS  += -Wshift-overflow=2 -Wswitch-default -Wswitch-enum
-WARNINGS  += -Wunused-parameter -Wunused-const-variable=2 -Wstrict-overflow=5
-WARNINGS  += -Wstringop-overflow=4 -Wstringop-truncation -Walloc-zero -Walloca
-WARNINGS  += -Warray-bounds=2 -Wattribute-alias=2 -Wlogical-op
-WARNINGS  += -Wduplicated-branches -Wduplicated-cond -Wtrampolines -Wfloat-equal
-WARNINGS  += -Wunsafe-loop-optimizations -Wshadow
-WARNINGS  += -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion
-WARNINGS  += -Wpacked -Wdangling-else -Wno-parentheses -Wsign-conversion
-WARNINGS  += -Wdate-time -Wjump-misses-init -Wreturn-local-addr -Wno-pointer-sign
-WARNINGS  += -Wstrict-prototypes #-Wold-style-definition
-WARNINGS  += -Wmissing-prototypes
-WARNINGS  += -Wmissing-declarations -Wnormalized=nfkc -Wredundant-decls
-WARNINGS  += -Wnested-externs -Wno-missing-field-initializers -fanalyzer
-WARNINGS  += -Wunused
+WARNINGS  = -Wall -Warray-bounds=2 -Wcast-align=strict -Wcast-qual -Wconversion -Wno-sign-conversion -Wdangling-else -Wdate-time -Wdouble-promotion -Wextra -Wfloat-conversion -Wformat-overflow=2 -Wformat-signedness -Wformat-truncation=2 -Wformat=2 -Winit-self -Wjump-misses-init -Wlogical-op -Wmissing-include-dirs -Wnested-externs -Wnull-dereference -Wpacked -Wpedantic -Wredundant-decls -Wshadow -Wshift-negative-value -Wshift-overflow=2 -Wstrict-aliasing -Wstrict-overflow=2 -Wstrict-prototypes -Wstringop-overflow=4 -Wstringop-truncation -Wswitch-default -Wswitch-enum -Wuninitialized -Wunsafe-loop-optimizations -Wunused -Wuse-after-free=3 -Wwrite-strings -fanalyzer -fmax-errors=2 -pedantic-errors
 
 CFLAGS += -std=c99 $(WARNINGS)
 LDFLAGS += -lmonocypher
@@ -25,7 +6,7 @@ LDFLAGS += -lmonocypher
 MAKE_PWDTTY = rm -f test/pwdtty; mkfifo test/pwdtty; echo "test" > test/pwdtty &
 
 .PHONY: default
-default: bench
+default: test
 
 .PHONY: test
 test: test/saylouis-test test/ttyjack.so

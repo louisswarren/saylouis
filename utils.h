@@ -26,7 +26,7 @@ tty_unset_no_echo(const struct termios *tmp, int fd)
 /* Read a string with length at most bufsize-1 from tty into buf */
 static
 uint32_t
-read_password(uint8_t *buf, uint32_t bufsize, FILE *tty)
+read_password(char *buf, uint32_t bufsize, FILE *tty)
 {
 	uint32_t password_len;
 	struct termios tmp;
